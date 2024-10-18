@@ -7,62 +7,61 @@ output: html_document
 ---
 
 # Download and read in data
-Please navigate to this URL to download the data we will be working with today:
+Please navigate to this URL to download the materials we will be working with today:
 
-https://github.com/VTQuantMethodsEEB/ibrc_workshop
+https://github.com/grimaudo-at/R_crash_course_DVBD
 
-Download all of the contents of this GitHub repository in a .zip file and save in a location you can readily access on your device. After Once you open the project (the .Rproj file), you can read in the data. To do so, there's a simple function, read.csv(), that allows you to easily bring your .csv into the R environment. Simply run below line of code to read in your data: 
+Download all of the contents of this GitHub repository in a .zip file and save in a location you can readily access on your device. After decompressing the .zip file, open the R project (*R_crash_course_DVBD.Rproj*), which will initialize a new session in R Studio. **R Projects** are useful files that set the working directory of your R session as the home folder of the Project. Therefore, below, we can simply read in our .csv file containing our data: 
 
 ```{r}
-batdat <- read.csv("bat_data.csv")
+simdat <- read.csv("data_sim.csv") #We can do this...
+
+simdat <- read.csv("C:/Users/zlh3/OneDrive - CDC/Grimaudo Personal/PE Fellowship Materials/trainings materials/R_crash_course_DVBD/data_sim.csv") #... instead of this.
 ```
 
-```{r, echo=FALSE}
-#batdat<- read.csv("/Users/alexg8/Desktop/IBRC #workshops/ibrc_workshop/data_management/bat_data.csv")
-```
-
-
-Once you've read this file in, it should be stored as a dataframe object called "batdat"
+Once you've read this file in, it should be stored as a **dataframe** object called "simdat". This dataframe is simulated data for an unspecified infectious disease. The data it contains will look similar to epidemic data collected in the real world. 
 
 # Let's get started
-First thing you should always do before working in R: Clear your workspace! This ensures that your R environment is clean and has no objects or functions defined during previous coding sessions. Think of this as cleaning your whiteboard before you start coding. 
+First thing you should always do at the beginning of your R session: clear your workspace! This ensures that your R environment is clean and has no objects or functions defined during previous coding sessions. Think of this as cleaning your whiteboard before you start coding. 
 
 ```{}
-rm(list = ls())
+rm(list = ls()) # Clearing workspace
 ```
 
 
 ## Load and install packages
 
-R packages are the "toolkits" of the R computing world. They offer users unique tools suited to whatever it is they want to do, from cleaning data, to building beautiful figures, to creating apps, to analyzing biological data. In order to use these toolboxes, you will need to install and then load them into the R environment. 
+R Packages are the "toolkits" of the R computing world. They offer users unique tools ("functions") suited to whatever it is you want to do, from cleaning data, to building beautiful figures, to creating apps, to analyzing data and building models. Because R is open-source, *anybody* can build an R Package and make it available to the world. R comes with many packages pre-installed, but you will encounter many you will need to install yourself.
 
 ```{r}
-#install.packages("ggplot2")
-#library(ggplot2)
+#install.packages("tidyverse")  #Installing the package -- this will take a moment. 
+#library(tidyverse)             #Loading the package. 
 ```
 
 ## Confused? Get help!
 
-The R package you just installed has many tools, called "functions", that allow you to make plots and figures in R. But what should you do if you're not sure how to use one of these functions? One of the most useful tools in the R environment is the '?' tool. When you are unsure what a specific function does, you can ask R! For example, if I am not sure what the function unique() does, I can run the below line of code and R will tell me: 
+The R Package you just installed, *tidyverse*, is actually a collection of packages commonly used for data cleaning, wrangling, and visualization. Each of these packages contains a collection of functions, which perform unique operations. Functions always have a similar syntax: *function()*. Within the parentheses, users can define specific arguments to change how the function does its job. If you are ever confused about what a specific function does or the arguments you can pass to it, use *?* to look it up!  
 
 ```{r}
-?unique
+?unique()
 ```
+
+Using *?* in this way pulls the R documentation for the function that was published with the most recent (installed) version of its Package. 
 
 ## Examine your data
 
-One of the most important things to do is, of course, to examine your data. Being familiar with the shape and contents of your dataset is essential, and R has many built-in functions that can help you do that!
+One of the most important things to do before analyzing your data is to be familiar with its contents. Luckily, R has an assortment of functions to quickly explore your data!
 
 ```{r, results='hide',fig.keep='all'}
-View(batdat)
-unique(batdat$species) # Tells you all the unique forms of the data in the specified column ($species)
-str(batdat) # Tells you what kind of data is contained in your dataframe
-head(batdat) # Returns the first several rows of data in your dataframe
-tail(batdat) # Returns the last several rows of data in your dataframe
-dim(batdat) # Tells you the size of your dataframe
-names(batdat) # Tells you the column names in your dataframe
-nrow(batdat) # Returns the number of rows in your dataframe
-ncol(batdat) # Returns the number of columns in your dataframe.
+View(simdat)
+unique(simdat$hospital) # Tells you all the unique values in the specified column ($hospital)
+str(simdat) # Tells you what kind of data is contained in your dataframe
+head(simdat) # Returns the first several rows of data in your dataframe
+tail(simdat) # Returns the last several rows of data in your dataframe
+dim(simdat) # Tells you the size of your dataframe
+names(simdat) # Tells you the column names in your dataframe
+nrow(simdat) # Returns the number of rows in your dataframe
+ncol(simdat) # Returns the number of columns in your dataframe.
 ```
 
 ## Add a column to your dataframe
