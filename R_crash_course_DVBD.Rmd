@@ -62,63 +62,96 @@ dim(simdat) # Tells you the size of your dataframe
 names(simdat) # Tells you the column names in your dataframe
 nrow(simdat) # Returns the number of rows in your dataframe
 ncol(simdat) # Returns the number of columns in your dataframe.
+hist(simdat$age) # Returns a histogram of a column in your dataframe containing numerical data, in this case age. 
 ```
 
 ## Add a column to your dataframe
 
-Often times, we want to add additional data to the dataframe we have read into the R environment. This is fairly straightforward, as long as we remember some simple notation. The money symbol ($) is how we tell R exactly which column we are referring to in a dataframe, and parentheses following a word always refers to a function. Below, I will add a column to the batdat dataframe in which I log-transform my fungal load column, gd:
+Often times, we will want to create new columns in our dataframe. This can be as simple as adding geographic metadata like country or state, or be a little more complex and use calculations made on data stored elsewhere in our dataframe. In the below chunk of code, we will add three new columns to our *simdat* dataframe: *state*, *bmi*, and *logbmi*. In each case, we will specify the new column using *$*, which specifies a column in a dataframe in the following way: *dataframe$column*. We will then assign this column new values using the *<-* assignment operator:
+
+For example, in our dataset, we might be interested in calculating the body mass index (BMI) of patients. To do so, we will create a new column, *bmi*, which will take values from the *ht_cm* and *wt_kg* columns for that patient and plug them into the BMI equation. We will then create another new column, *log.bmi*, that contains the log-transformed bmi values we just created: 
+
 
 ```{r}
-batdat$log.loads<-log10(batdat$gdL)
+simdat$state <- "Colorado" # Creating a state column. 
+
+# The above line of code creates the new column, 'state,' in our dataframe, 'simdat,' and fills every cell with the character "Colorado". Even though this column did not yet exist, we created it by assigning it values using the <- assignment syntax. 
+
+simdat$bmi <- simdat$wt_kg/(simdat$ht_cm/100) #Creating a bmi column. 
+
+# Above, we created a new column, bmi, in the simdat dataframe that contains each individual's body mass index (BMI), which is a function of their weight and height. In specifying this new column, we used the patient's height and weight data stored in separate columns in the dataframe, plugging them into the BMI equation. 
+
+simdat$logbmi <- log10(simdat$bmi) #Creating a column of log-transformed bmi values. 
+
+# In the above line, we used the function 'log10()', which log(base-10)-transforms numerical data passed to the function. We
+# passed the data contained in the bmi column we just created to this function to log-transform it and store the results in the logbmi column. 
 ```
 
-## Subset data
+## Filter data
 
-Another very useful thing to do in R is subsetting data. This allows us to filter down a dataframe to only look at the parts we are interested in. For example, in the batdat dataframe, what if we wanted to make a whole new dataframe that just contains the data from Myotis septentrionalis?
-
-```{r, results='hide',fig.keep='all'}
-MYSE.dat = subset(batdat, species=="MYSE") #a factor/character, so need == and quotes
-head(MYSE.dat)
-dim(MYSE.dat)
+When working with our data, we often are interested in only a subset, such as that from a specific hospital. In R, there are a few different ways to subset our data in this way, including using base-R indexing syntax, the base-R *subset()* function, and the *filter()* function from the package *dplyr*. All of these methods accomplish the same thing, illustrating that there can be redundancies in R and among Packages. Below, we illustrate how each can be used to subset the *simdat* dataframe to create a new dataframe, *simdat.military*, which only contains data collected from Military Hospital: 
+```{r, echo=FALSE}
+require(dplyr)
 ```
 
-As you can see, this new dataframe only contains 12 observations from Myotis septentrionalis. What if we wanted to filter numerical data? For example, what if we only wanted data from bats that were roosting at 6 degrees celsius or warmer? 
 
 ```{r, results='hide',fig.keep='all'}
-warm.temps = subset(batdat, temp>6) #a number, so no quotes
-head(warm.temps)
-dim(warm.temps)
+simdat.military <- simdat[simdat$hospital == "Military Hospital",]
+# The above line of code uses the base-R indexing system: dataframe[row, column]. We specified the new dataframe, simdat.military, to be a subset of simdat, specifically those rows where the 'hospital' column contains a string exactly equal to "Military Hospital". By leaving the column entry after the "," blank, we told R to include all of the column originally contained in simdat.
+
+# It is important to use == here instead of = because we are asking R to find values that exactly equal some string. The single = can be used in lieu of <- for assignment, but we are not trying to assign any values, but rather find them. 
+
+simdat.military <- subset(simdat, hospital == "Military Hospital")
+# The above line creates the same new dataframe, simdat.military, but uses the base-R function, subset(). 
+
+simdat.military <- filter(simdat, hospital == "Military Hospital")
+# The above line of code does the exact same thing, but using the filter() function from the dplyr Package. 
+
+dim(simdat.military) # As you can see, the size of our dataframe has reduced compared to simdat, indicating the subsetting worked. 
 ```
 
-As you can see here, this new dataframe contains 258 observations, only from bats that were found roosting at 6C or warmer. Often times, you will see code that looks a little different, but accomplishes the same thing by using brackets [ ]. Brackets are a way of telling R exactly which part of a dataframe you are referring to. We can subset our batdat dataframe in the same way we did above, but using the bracket system: 
+What if we wanted to subset intead based on some numerical value? For example, what if we wanted to just use data from individuals 18 years-old or older? We can do that, too!
 
 ```{r, results='hide',fig.keep='all'}
-MYSE.dat = batdat[batdat$species=="MYSE",]
-warm.temps = batdat[batdat$temp>6,]
+# Indexing first: 
+simdat.18 <- simdat[simdat$age>18,] #However, this line does NOT include individuals that are exactly 18 years-old...
+simdat.18 <- simdat[simdat$age>=18,] # ...this one does. 
+
+# subset():
+simdat.18 <- subset(simdat, age >= 18)
+
+# filter():
+simdat.18 <- filter(simdat, age >= 18)
+dim(simdat.18) # Looks like the subsetting was successful. 
 ```
 
 ## Summarize data using aggregate()
 
-The function aggregate() is an extremely useful function to continue exploring your data. It allows you to summarize your dataset by applying a function to subsets of data individually. For example, say that I wanted to know what the mean log fungal load (batdat$log.loads) was on my bats for each species. The aggregate() function allows me to apply the mean() function (finds the average of data) to find a separate average value for each species:
+Perhaps one of the most common things you will want to do with your dataset is make summary tables. The tidyverse makes this quite simple in R, but does require syntax that is not always intuitive, including the piping operator: %>% 
+
+In plain English, the piping operator means "and then" and is used to string together a series of commands to wrangle, re-shape, and summarize your data. In the below chunk of code, we will summarize the mean and standard deviation of patient BMI between each hospital and disease outcome (recovery or death). We will store this summary as a new dataframe, *outcome.summ*:
 
 ```{r, results='hide',fig.keep='all'}
-bat.summary = aggregate(log.loads~species, FUN=mean, data = batdat) #aggregate data using the mean to give fungal loads by species
-bat.summary
+# Look to the right for plain English translations. 
 
-```
-
-## Make a histogram of a column in your data
-
-Another useful function to visualize the shape of your data is hist(), which will make a histogram with the data that you feed it. In the example below, we will make a histogram of the raw log fungal loads (batdat$log.loads) contained in our batdat dataframe: 
-
-```{r}
-hist(batdat$log.loads)
+outcome.summ <- simdat %>% # To make a new dataframe called outcome.summ, first take simdat AND THEN...
+  group_by(hospital, outcome) %>% # ... group together all of its data based on hospital and outcome AND THEN...
+  summarise(bmi.mean = mean(bmi), bmi.sd = sd(bmi)) # ... summarize each group's BMI data, storing the mean in a column called "bmi.mean" and the standard deviation in a column called "bmi.sd". 
 ```
 
 ## Write a .csv file
 
-We have created several new dataframes from our original batdat dataframe. If we want to save these new dataframes as a .csv file, the function write.csv() will come in handy. In the example below, I will write the MYSE.dat dataframe as a new .csv file:
+Today, we have created several new dataframes from our original simdat dataframe. If we want to save these new dataframes as a .csv file, the function write.csv() will come in handy. In the example below, I will write our new BMI summary dataframe as a new .csv file:
 
 ```{r}
-#write.csv(MYSE.dat, "MYSE_dat.csv", row.names = F)
+write.csv(outcome.summ, "bmi_summ_dat.csv", row.names = F)
+# The row.names = F argument tells R to, when writing the .csv, to not include row number as a column in the spreadsheet. 
 ```
+
+## Carol's as.Date() and ggplot section
+
+
+```{r}
+print("Congratulations!")
+```
+
