@@ -16,7 +16,7 @@ Download all of the contents of this GitHub repository in a .zip file and save i
 ```{r}
 simdat <- read.csv("data_sim.csv") #We can do this...
 
-simdat <- read.csv("C:/Users/zlh3/OneDrive - CDC/Grimaudo Personal/PE Fellowship Materials/trainings materials/R_crash_course_DVBD/data_sim.csv") #... instead of this.
+#simdat <- read.csv("C:/Users/zlh3/OneDrive - CDC/Grimaudo Personal/PE Fellowship Materials/trainings #materials/R_crash_course_DVBD/data_sim.csv") #... instead of this.
 ```
 
 Once you've read this file in, it should be stored as a **dataframe** object called "simdat". This dataframe is simulated data for an unspecified infectious disease. The data it contains will look similar to epidemic data collected in the real world. 
@@ -31,7 +31,9 @@ rm(list = ls()) # Clearing workspace
 
 ## Load and install packages
 
-R Packages are the "toolkits" of the R computing world. They offer users unique tools ("functions") suited to whatever it is you want to do, from cleaning data, to building beautiful figures, to creating apps, to analyzing data and building models. Because R is open-source, *anybody* can build an R Package and make it available to the world. R comes with many packages pre-installed, but you will encounter many you will need to install yourself.
+R Packages are the "toolkits" of the R computing world. They offer users unique tools ("functions") suited to whatever it is you want to do, from cleaning data, to building beautiful figures, to creating apps, to analyzing data and building models. Because R is open-source, *anybody* can build an R Package and make it available to the world. R comes with many packages pre-installed, but you will encounter many you will need to install yourself. We usually only need to install packages once, although some packages may need to be updated. 
+
+*Note that a # in the code comments the code out so that it will not be run*
 
 ```{r}
 #install.packages("tidyverse")  #Installing the package -- this will take a moment. 
@@ -148,7 +150,185 @@ write.csv(outcome.summ, "bmi_summ_dat.csv", row.names = F)
 # The row.names = F argument tells R to, when writing the .csv, to not include row number as a column in the spreadsheet. 
 ```
 
-## Carol's as.Date() and ggplot section
+## Working with dates in R
+Dates in R can sometimes be tricky, especially if they're in different formats.  In the dataset `simdat`, there is a column that is named `date_onset`. First, lets check what class `date_onset` is stored as.
+
+* How can we check the class of `date_onset`?*
+
+```{r}
+class(simdat$date_onset)
+```
+
+We need to reformat `date_onset` from a character to a date class. We will use the `as.Date()` function to handle this. Currently, the format of the date variables is month/day/year so we need to tell R what the current format is. To do this, we use the `%` specifically for dates to tell R which part of the character represents day, month and year respectively. Below is some code to this. We convert `date_onset` from a character to a date, and then re-assign it to the `date_onset` column in the `simdat` dataframe. 
+
+```{r}
+#Using base R
+simdat$date_onset <- as.Date(simdat$date_onset, format="%m/%d/%Y")
+
+#Using tidyverse
+simdat<- simdat%>%
+          mutate(date_onset=as.Date(date_onset,format="%m/%d/%Y"))
+```
+
+We can now recheck the format of `date_onset` and visually inspect the converted `date_onset` column
+```{r}
+class(simdat$date_onset)
+head(simdat$date_onset)
+```
+Ensuring dates are actually read as dates into R is important for a number of reasons. 
+
+First, we can now filter and subset based on dates. For example, if we only want cases that had an onset date in 2014, we can subset using either base R or tidyverse. Note that any time we want R to recognize a date, we need to use `as.Date`. For example, we can't simply code`filter(date_onset<="2014-12-31")` because R would not recognize this as a date. 
+
+```{r}
+#Using base R
+simdat.2014<-simdat[simdat$date_onset<=as.Date("2014-12-31"),]
+
+#Using tidyverse
+simdat.2014<- simdat%>%
+                  filter(date_onset<=as.Date("2014-12-31"))
+```
+
+Second, we can now do calculations with the date variables. What if we want to know how many days it takes a case to have a known outcome after symptom onset? Which variables can we use from the `simdat` to calculate this? First, we need to convert `date_outcome` into a date variable. Then, we check that `date_outcome` is indeed a date.
+```{r}
+# Using base R
+simdat$date_outcome<-as.Date(simdat$date_outcome, format="%m/%d/%Y")
+
+simdat<- simdat%>%
+            mutate(date_outcome=as.Date(date_outcome, format="%m/%d/%Y"))
+
+class(simdat$date_outcome)
+```
+
+Now that both `date_onset` and `date_outcome` are dates, we can now do some math to calculate the days between the date of symptom onset and the date of outcome.
+
+```{r eval=F}
+simdat$date_outcome-simdat$date_onset
+```
+
+We can then assign this new value of days between onset and outcome as a new variable in `simdat`
+
+```{r}
+#Using base R
+simdat$days_outcome_onset <- simdat$date_outcome-simdat$date_onset
+
+#Using tidyverse
+simdat <- simdat%>%
+            mutate(days_outcome_onset = date_outcome-date_onset)
+```
+
+Third, we can now generate time series plots or epidemic curves over time using the date variable as an x-axis, which we will cover in the next section
+
+## Plotting in R using ggplot()
+`ggplot2` is a powerful and widely-used data visualization package in R that’s part of the tidyverse family. It is based on the idea of "Grammar of Graphics," which provides a structured and logical approach to creating plots. The key idea behind ggplot2 is that data visualization can be broken down into layers, where each layer represents a specific component or transformation of the data. This allows us to describe a plot in terms of building blocks or layers. Each plot has several sessnetial components 
+
+* *Data*: The dataset you are visualizing.
+* *Aesthetic mappings (aes)*: Describes how data variables map to visual properties like position, color, size, etc.
+* *Geometries (geoms)*: Defines the type of plot, such as points (scatter plot), lines (line plot), bars (bar plot), etc.
+* *Many other bells and whistles*: Controlling scales and legends, adding text, changing colors, facetting etc. 
+
+We will first download and load the `ggplot2` package.
+How will you do this?
+```{r}
+#install.packages("ggplot2")
+library(ggplot2)
+```
+
+Next, we will start by creating a scatter plot of age and weight, with age on the x-axis and weight on the y-axis. We will use the `ggplot()` function. First, we will specify the dataset we are using. Then we will provide the `aes()` mapping by specifying which variable we want on the x-axis and which variable on the y-axis, lastly, we specify the type of plot for R. In our case, a scatterplot is specific as `geom_point()`
+```{r}
+ggplot(data=simdat,              #data
+        aes(x=age, y=wt_kg))+    #aes mapping of x and y axis
+        geom_point()             #specifying scatter plot
+```
+We can now build on this plot by adding a title and providing more informative labels to the x and y axis using the functions `ggtitle()`, `xlab()` and `ylab()`. Note that in the `ggplot()` syntax, we simply `+` each separate element onto the code as we build out our plot.
+```{r}
+ggplot(data=simdat,                                              #data
+        aes(x=age, y=wt_kg))+                                    #aes mapping of x and y axis
+        geom_point()+                                            #specifying scatter plot
+        ggtitle("Scatter plot of age and weight among cases")+   #Plot title
+        xlab("Age (years)")+                                     #X-axis label
+        ylab("Weight (kg)")                                      #Y-axis label
+  
+```
+
+Your turn! Now try to do a scatter plot with age on the x-axis and height on the y-axis. Ensure that you label your axis and plot title so it's informative!
+```{r}
+ggplot(data=simdat,                                              #data
+        aes(x=age, y=ht_cm))+                                    #aes mapping of x and y axis
+        geom_point()+                                            #specifying scatter plot
+        ggtitle("Scatter plot of age and height among cases")+   #Plot title
+        xlab("Age (years)")+                                     #X-axis label
+        ylab("Height (cm)")                                      #Y-axis label
+```
+
+Now we will try a different type of graph. We want to produce an epidemic curve of all cases over time. In order to do this, we first need to summarise the data so that we have the number of cases per day, by the date of onset. How can we do this?
+
+**Hint**: the function `n()` can count the number of rows in a dataframe. (It can also count the number of elements in any object.)
+
+```{r}
+simdat.day.summ<-simdat%>%
+                  group_by(date_onset)%>%
+                  summarise(n_case=n())
+                  
+```
+
+Now that we have our data properly summarized by the date of symptom onset, we can now proceed with producing an epidemic curve. 
+```{r}
+
+ggplot(data=simdat.day.summ,                                              #data
+        aes(x=date_onset, y=n_case))+                                    #aes mapping of x and y axis
+        geom_col()                                                      #specifying bar plot
+
+```
+Get creative! Try to figure out how we can modify the plot above:
+
+**Hint** Try googling or looking at the package vignette for the `ggplot2` package
+* Add plot title, x-axis label and y-axis label
+* Change the colors of the bars
+* Increase the y-axis so it has a maximum of 80
+* Change the background to a black white theme
+
+
+
+```{r}
+ggplot(data=simdat.day.summ,                                              #data
+        aes(x=date_onset, y=n_case))+                                    #aes mapping of x and y axis
+        geom_col(color="darkblue")+                                                     #specifying bar plot  
+        ggtitle("Epidemic curve by date of symptom onset")+              #Plot title
+          xlab("Date")+                                                    #X-axis label
+          ylab("Number of cases")+                                          #Y-axis label
+          ylim(0,80)+
+          theme_bw()
+```
+
+What if we wanted a line graph?
+
+```{r}
+ggplot(data=simdat.day.summ,                                              #data
+        aes(x=date_onset, y=n_case))+                                    #aes mapping of x and y axis
+        geom_line(color="darkblue")+                                                     #specifying bar plot  
+        ggtitle("Epidemic curve by date of symptom onset")+              #Plot title
+          xlab("Date")+                                                    #X-axis label
+          ylab("Number of cases")+                                          #Y-axis label
+        ylim(0,80)+
+        theme_bw()
+```
+Challenge! Replicate the following plot
+
+```{r}
+simdat.day.gend.summ<-simdat%>%
+                  group_by(date_onset,gender)%>%
+                  summarise(n_case=n())
+
+ggplot(data=simdat.day.gend.summ,                                              #data
+        aes(x=date_onset, y=n_case,color=gender))+                                    #aes mapping of x and y axis
+        geom_line()+                                                     #specifying bar plot  
+        ggtitle("Epidemic curve by date of symptom onset and gender")+              #Plot title
+          xlab("Date")+                                                    #X-axis label
+          ylab("Number of cases")+                                          #Y-axis label
+          ylim(0,50)+
+          theme_bw()
+
+```
 
 
 ```{r}
