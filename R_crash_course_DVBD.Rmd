@@ -19,11 +19,12 @@ simdat <- read.csv("data_sim.csv") #We can do this...
 #simdat <- read.csv("C:/Users/zlh3/OneDrive - CDC/Grimaudo Personal/PE Fellowship Materials/trainings #materials/R_crash_course_DVBD/data_sim.csv") #... instead of this.
 ```
 
-Once you've read this file in, it should be stored as a **dataframe** object called "simdat". This dataframe is simulated data for an unspecified infectious disease. The data it contains will look similar to epidemic data collected in the real world. 
+Once you've read this file in, it should be stored as a **dataframe** object called `simdat`. This dataframe is simulated data for an unspecified infectious disease. The data it contains will look similar to epidemic data collected in the real world. 
 
 # Let's get started
-First thing you should always do at the beginning of your R session: clear your workspace! This ensures that your R environment is clean and has no objects or functions defined during previous coding sessions. Think of this as cleaning your whiteboard before you start coding. 
-
+|       First thing you should always do at the beginning of your R session: clear your workspace! This ensures that your R environment is clean and has no objects or functions defined during previous coding sessions. Think of this as cleaning your whiteboard before you start coding. 
+|
+|
 ```{}
 rm(list = ls()) # Clearing workspace
 ```
@@ -31,33 +32,34 @@ rm(list = ls()) # Clearing workspace
 
 ## Load and install packages
 
-R Packages are the "toolkits" of the R computing world. They offer users unique tools ("functions") suited to whatever it is you want to do, from cleaning data, to building beautiful figures, to creating apps, to analyzing data and building models. Because R is open-source, *anybody* can build an R Package and make it available to the world. R comes with many packages pre-installed, but you will encounter many you will need to install yourself. We usually only need to install packages once, although some packages may need to be updated. 
+|       R Packages are the "toolkits" of the R computing world. They offer users unique tools ("functions") suited to whatever it is you want to do, from cleaning data, to building beautiful figures, to creating apps, to analyzing data and building models. Because R is open-source, *anybody* can build an R Package and make it available to the world. R comes with many packages pre-installed, but you will encounter many you will need to install yourself. We usually only need to install packages once, although some packages may need to be updated. 
+|
+*Note that a # in the code comments the code out so that it will not be run.*
 
-*Note that a # in the code comments the code out so that it will not be run*
-
-```{r}
+```{r, message=F, warning=F}
 #install.packages("tidyverse")  #Installing the package -- this will take a moment. 
-#library(tidyverse)             #Loading the package. 
+library(tidyverse)             #Loading the package. 
 ```
 
 ## Confused? Get help!
 
-The R Package you just installed, *tidyverse*, is actually a collection of packages commonly used for data cleaning, wrangling, and visualization. Each of these packages contains a collection of functions, which perform unique operations. Functions always have a similar syntax: *function()*. Within the parentheses, users can define specific arguments to change how the function does its job. If you are ever confused about what a specific function does or the arguments you can pass to it, use *?* to look it up!  
-
-```{r}
+|       The R Package you just installed, *tidyverse*, is actually a collection of packages commonly used for data cleaning, wrangling, and visualization. Each of these packages contains a collection of functions, which perform unique operations. Functions always have a similar syntax: `function()`. Within the parentheses, users can define specific arguments to change how the function does its job. If you are ever confused about what a specific function does or the arguments you can pass to it, use `?` to look it up!  
+|
+|
+```{r, results='hide', message=F}
 ?unique()
 ```
 
-Using *?* in this way pulls the R documentation for the function that was published with the most recent (installed) version of its Package. 
+Using `?` in this way pulls the R documentation for the function that was published with the most recent (installed) version of its Package. 
 
 ## Examine your data
 
 One of the most important things to do before analyzing your data is to be familiar with its contents. Luckily, R has an assortment of functions to quickly explore your data!
 
 ```{r, results='hide',fig.keep='all'}
-View(simdat)
+View(simdat) # Opens a new tab in Rstudio to examine your dataframe
 unique(simdat$hospital) # Tells you all the unique values in the specified column ($hospital)
-str(simdat) # Tells you what kind of data is contained in your dataframe
+str(simdat) # Tells you what kind of data that is contained in your dataframe
 head(simdat) # Returns the first several rows of data in your dataframe
 tail(simdat) # Returns the last several rows of data in your dataframe
 dim(simdat) # Tells you the size of your dataframe
@@ -69,11 +71,11 @@ hist(simdat$age) # Returns a histogram of a column in your dataframe containing 
 
 ## Add a column to your dataframe
 
-Often times, we will want to create new columns in our dataframe. This can be as simple as adding geographic metadata like country or state, or be a little more complex and use calculations made on data stored elsewhere in our dataframe. In the below chunk of code, we will add three new columns to our *simdat* dataframe: *state*, *bmi*, and *logbmi*. In each case, we will specify the new column using *$*, which specifies a column in a dataframe in the following way: *dataframe$column*. We will then assign this column new values using the *<-* assignment operator:
-
-For example, in our dataset, we might be interested in calculating the body mass index (BMI) of patients. To do so, we will create a new column, *bmi*, which will take values from the *ht_cm* and *wt_kg* columns for that patient and plug them into the BMI equation. We will then create another new column, *log.bmi*, that contains the log-transformed bmi values we just created: 
-
-
+|       Often times, we will want to create new columns in our dataframe. This can be as simple as adding geographic metadata like country or state, or be a little more complex and use calculations made on data stored elsewhere in our dataframe. In the below chunk of code, we will add three new columns to our `simdat` dataframe: `state`, `bmi`, and `logbmi`. In each case, we will specify the new column using `\$`, which specifies a column in a dataframe in the following way: `dataframe$column`. We will then assign this column new values using the `<-` assignment operator:
+|
+|       For example, in our dataset, we might first be interested in specifying that all this data came from Colorado in a new `state` column. We then might be interested in calculating the body mass index (BMI) of patients. To do so, we will create a new column, `bmi`, which will take values from the `ht_cm` and `wt_kg` columns for that patient and plug them into the BMI equation. We will then create another new column, `log.bmi`, that contains the log-transformed bmi values we just created: 
+|
+|
 ```{r}
 simdat$state <- "Colorado" # Creating a state column. 
 
@@ -91,59 +93,49 @@ simdat$logbmi <- log10(simdat$bmi) #Creating a column of log-transformed bmi val
 
 ## Filter data
 
-When working with our data, we often are interested in only a subset, such as that from a specific hospital. In R, there are a few different ways to subset our data in this way, including using base-R indexing syntax, the base-R *subset()* function, and the *filter()* function from the package *dplyr*. All of these methods accomplish the same thing, illustrating that there can be redundancies in R and among Packages. Below, we illustrate how each can be used to subset the *simdat* dataframe to create a new dataframe, *simdat.military*, which only contains data collected from Military Hospital: 
-```{r, echo=FALSE}
+|       When working with our data, we often are interested in only a subset, such as that from a specific hospital. In R, there are a few different ways to subset our data in this way, including using base-R indexing syntax, the base-R `subset()` function, and the `filter()` function from the package *dplyr*. Because we are working with the *tidyverse* packages today, of which *dplyr* is a part, we will use the `filter()` function. Below, we create a new dataframe, `simdat.military`, which only contains data collected from Military Hospital:
+|
+|
+```{r, echo=FALSE, results='hide', message=F, warning=F}
 require(dplyr)
 ```
 
-
-```{r, results='hide',fig.keep='all'}
-simdat.military <- simdat[simdat$hospital == "Military Hospital",]
-# The above line of code uses the base-R indexing system: dataframe[row, column]. We specified the new dataframe, simdat.military, to be a subset of simdat, specifically those rows where the 'hospital' column contains a string exactly equal to "Military Hospital". By leaving the column entry after the "," blank, we told R to include all of the column originally contained in simdat.
-
-# It is important to use == here instead of = because we are asking R to find values that exactly equal some string. The single = can be used in lieu of <- for assignment, but we are not trying to assign any values, but rather find them. 
-
-simdat.military <- subset(simdat, hospital == "Military Hospital")
-# The above line creates the same new dataframe, simdat.military, but uses the base-R function, subset(). 
-
+```{r}
 simdat.military <- filter(simdat, hospital == "Military Hospital")
-# The above line of code does the exact same thing, but using the filter() function from the dplyr Package. 
+
+#In the above line, we specified the new dataframe, simdat.military, to be a subset of simdat, specifically those rows where the 'hospital' column contains a string exactly equal to "Military Hospital". 
 
 dim(simdat.military) # As you can see, the size of our dataframe has reduced compared to simdat, indicating the subsetting worked. 
 ```
 
-What if we wanted to subset intead based on some numerical value? For example, what if we wanted to just use data from individuals 18 years-old or older? We can do that, too!
+What if we wanted to subset instead based on some numerical value? For example, what if we wanted to just use data from individuals 18 years-old or older? We can do that, too!
 
-```{r, results='hide',fig.keep='all'}
-# Indexing first: 
-simdat.18 <- simdat[simdat$age>18,] #However, this line does NOT include individuals that are exactly 18 years-old...
-simdat.18 <- simdat[simdat$age>=18,] # ...this one does. 
-
-# subset():
-simdat.18 <- subset(simdat, age >= 18)
-
-# filter():
-simdat.18 <- filter(simdat, age >= 18)
+```{r}
+simdat.18 <- filter(simdat, age > 18) # However, this dataframe does not contain individuals exactly 18 years-old...
+simdat.18 <- filter(simdat, age >= 18) # ... this one does. 
 dim(simdat.18) # Looks like the subsetting was successful. 
 ```
 
-## Summarize data using aggregate()
+## Summarize data
 
-Perhaps one of the most common things you will want to do with your dataset is make summary tables. The tidyverse makes this quite simple in R, but does require syntax that is not always intuitive, including the piping operator: %>% 
-
-In plain English, the piping operator means "and then" and is used to string together a series of commands to wrangle, re-shape, and summarize your data. In the below chunk of code, we will summarize the mean and standard deviation of patient BMI between each hospital and disease outcome (recovery or death). We will store this summary as a new dataframe, *outcome.summ*:
-
-```{r, results='hide',fig.keep='all'}
+|       One of the most common things you will want to do with your dataset is make summaries. The *tidyverse* makes this quite simple in R, but does require syntax that is not always intuitive, including the piping operator: %>% 
+|
+|       In plain English, the piping operator means "and then" and is used to string together a series of commands to wrangle, re-shape, and summarize your data. In the below chunk of code, we will summarize the mean and standard deviation of patient BMI between each hospital and disease outcome (recovery or death). We will store this summary as a new dataframe, `outcome.summ`:
+|
+|
+```{r, message=F}
 # Look to the right for plain English translations. 
 
 outcome.summ <- simdat %>% # To make a new dataframe called outcome.summ, first take simdat AND THEN...
   group_by(hospital, outcome) %>% # ... group together all of its data based on hospital and outcome AND THEN...
   summarise(bmi.mean = mean(bmi), bmi.sd = sd(bmi)) # ... summarize each group's BMI data, storing the mean in a column called "bmi.mean" and the standard deviation in a column called "bmi.sd". 
+
+head(outcome.summ) # Give me the first 6 rows of the new dataframe. 
 ```
 
 ## Write a .csv file
 
-Today, we have created several new dataframes from our original simdat dataframe. If we want to save these new dataframes as a .csv file, the function write.csv() will come in handy. In the example below, I will write our new BMI summary dataframe as a new .csv file:
+Today, we have created several new dataframes from our original simdat dataframe. If we want to save these new dataframes as a .csv file, the function `write.csv()` will come in handy. In the example below, we will write our new BMI summary dataframe as a new .csv file:
 
 ```{r}
 write.csv(outcome.summ, "bmi_summ_dat.csv", row.names = F)
@@ -230,17 +222,17 @@ We will first download and load the `ggplot2` package.
 How will you do this?
 ```{r}
 #install.packages("ggplot2")
-library(ggplot2)
+#library(ggplot2)
 ```
 
 Next, we will start by creating a scatter plot of age and weight, with age on the x-axis and weight on the y-axis. We will use the `ggplot()` function. First, we will specify the dataset we are using. Then we will provide the `aes()` mapping by specifying which variable we want on the x-axis and which variable on the y-axis, lastly, we specify the type of plot for R. In our case, a scatterplot is specific as `geom_point()`
-```{r}
+```{r, warning=FALSE}
 ggplot(data=simdat,              #data
         aes(x=age, y=wt_kg))+    #aes mapping of x and y axis
         geom_point()             #specifying scatter plot
 ```
 We can now build on this plot by adding a title and providing more informative labels to the x and y axis using the functions `ggtitle()`, `xlab()` and `ylab()`. Note that in the `ggplot()` syntax, we simply `+` each separate element onto the code as we build out our plot.
-```{r}
+```{r, warning=F}
 ggplot(data=simdat,                                              #data
         aes(x=age, y=wt_kg))+                                    #aes mapping of x and y axis
         geom_point()+                                            #specifying scatter plot
@@ -251,7 +243,7 @@ ggplot(data=simdat,                                              #data
 ```
 
 Your turn! Now try to do a scatter plot with age on the x-axis and height on the y-axis. Ensure that you label your axis and plot title so it's informative!
-```{r}
+```{r, warning=F}
 ggplot(data=simdat,                                              #data
         aes(x=age, y=ht_cm))+                                    #aes mapping of x and y axis
         geom_point()+                                            #specifying scatter plot
@@ -272,13 +264,14 @@ simdat.day.summ<-simdat%>%
 ```
 
 Now that we have our data properly summarized by the date of symptom onset, we can now proceed with producing an epidemic curve. 
-```{r}
+```{r, warning=F}
 
 ggplot(data=simdat.day.summ,                                              #data
         aes(x=date_onset, y=n_case))+                                    #aes mapping of x and y axis
         geom_col()                                                      #specifying bar plot
 
 ```
+
 Get creative! Try to figure out how we can modify the plot above:
 
 **Hint** Try googling or looking at the package vignette for the `ggplot2` package
@@ -289,49 +282,50 @@ Get creative! Try to figure out how we can modify the plot above:
 
 
 
-```{r}
-ggplot(data=simdat.day.summ,                                              #data
+```{r, warning=F}
+ggplot(data=simdat.day.summ,                                             #data
         aes(x=date_onset, y=n_case))+                                    #aes mapping of x and y axis
-        geom_col(color="darkblue")+                                                     #specifying bar plot  
+        geom_col(color="darkblue")+                                      #specifying bar plot  
         ggtitle("Epidemic curve by date of symptom onset")+              #Plot title
-          xlab("Date")+                                                    #X-axis label
-          ylab("Number of cases")+                                          #Y-axis label
-          ylim(0,80)+
-          theme_bw()
+          xlab("Date")+                                                  #X-axis label
+          ylab("Number of cases")+                                       #Y-axis label
+          ylim(0,80)+                                                    #setting limits of y-axis
+          theme_bw()                                                     #specifying a theme
 ```
 
 What if we wanted a line graph?
 
-```{r}
-ggplot(data=simdat.day.summ,                                              #data
+```{r, warning=F}
+ggplot(data=simdat.day.summ,                                             #data
         aes(x=date_onset, y=n_case))+                                    #aes mapping of x and y axis
-        geom_line(color="darkblue")+                                                     #specifying bar plot  
+        geom_line(color="darkblue")+                                     #specifying line plot  
         ggtitle("Epidemic curve by date of symptom onset")+              #Plot title
-          xlab("Date")+                                                    #X-axis label
-          ylab("Number of cases")+                                          #Y-axis label
-        ylim(0,80)+
-        theme_bw()
+          xlab("Date")+                                                  #X-axis label
+          ylab("Number of cases")+                                       #Y-axis label
+        ylim(0,80)+                                                      #setting y-axis limits
+        theme_bw()                                                       #specifying a theme
 ```
+
 Challenge! Replicate the following plot
 
-```{r}
+```{r, warning=F, echo=F, message=F}
 simdat.day.gend.summ<-simdat%>%
                   group_by(date_onset,gender)%>%
                   summarise(n_case=n())
 
 ggplot(data=simdat.day.gend.summ,                                              #data
-        aes(x=date_onset, y=n_case,color=gender))+                                    #aes mapping of x and y axis
-        geom_line()+                                                     #specifying bar plot  
-        ggtitle("Epidemic curve by date of symptom onset and gender")+              #Plot title
-          xlab("Date")+                                                    #X-axis label
-          ylab("Number of cases")+                                          #Y-axis label
-          ylim(0,50)+
-          theme_bw()
+        aes(x=date_onset, y=n_case, color=gender))+                            #aes mapping of x and y axis
+        geom_line()+                                                           #specifying bar plot  
+        ggtitle("Epidemic curve by date of symptom onset and gender")+         #Plot title
+          xlab("Date")+                                                        #X-axis label
+          ylab("Number of cases")+                                             #Y-axis label
+          ylim(0,50)+                                                          #setting y-axis limits
+          theme_bw()                                                           #specifying a theme
 
 ```
 
 
 ```{r}
-print("Congratulations!")
+print("Congratulations, you've completed the workshop!")
 ```
 
