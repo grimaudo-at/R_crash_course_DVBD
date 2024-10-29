@@ -71,24 +71,27 @@ hist(simdat$age) # Returns a histogram of a column in your dataframe containing 
 
 ## Add a column to your dataframe
 
-|       Often times, we will want to create new columns in our dataframe. This can be as simple as adding geographic metadata like country or state, or be a little more complex and use calculations made on data stored elsewhere in our dataframe. In the below chunk of code, we will add three new columns to our `simdat` dataframe: `state`, `bmi`, and `logbmi`. In each case, we will specify the new column using `\$`, which specifies a column in a dataframe in the following way: `dataframe$column`. We will then assign this column new values using the `<-` assignment operator:
-|
-|       For example, in our dataset, we might first be interested in specifying that all this data came from Colorado in a new `state` column. We then might be interested in calculating the body mass index (BMI) of patients. To do so, we will create a new column, `bmi`, which will take values from the `ht_cm` and `wt_kg` columns for that patient and plug them into the BMI equation. We will then create another new column, `log.bmi`, that contains the log-transformed bmi values we just created: 
+|       Often times, we will want to create new columns in our dataframe. This can be as simple as adding geographic metadata like country or state, or be a little more complex and use calculations made on data stored elsewhere in our dataframe. For example, in our dataset, we might first be interested in specifying that all this data came from Colorado in a new `state` column. We then might be interested in calculating the body mass index (BMI) of patients. To do so, we will create a new column, `bmi`, which will take values from the `ht_cm` and `wt_kg` columns for that patient and plug them into the BMI equation. We will then create another new column, `log.bmi`, that contains the log-transformed BMI values we just created. 
 |
 |
+|       In the below chunk of code, we add the three new columns to our `simdat` dataframe: `state`, `bmi`, and `logbmi`. **Note that there are various ways to accomplish this, including using the base R `dataframe$column` syntax.** However, because we are working with *tidyverse* today, we will create these new columns using the `mutate()` function from package *dplyr*, which is part of the *tidyverse*:
+|
+|       
 ```{r}
-simdat$state <- "Colorado" # Creating a state column. 
+simdat.new <- mutate(.data=simdat, state="Colorado", bmi=wt_kg/(ht_cm/100), logbmi=log10(bmi)) # Creating a state column. 
 
-# The above line of code creates the new column, 'state,' in our dataframe, 'simdat,' and fills every cell with the character "Colorado". Even though this column did not yet exist, we created it by assigning it values using the <- assignment syntax. 
+#In the above line of code, we created a new data.frame object called "simdat.new". We used the assignment operator "<-" to specify what we want this new dataframe to be. Then, using the mutate() function, we told R to make this new dataframe a version of our original dataframe, "simdat", using the .data= argument. The state=, bmi=, and logbmi= arguments tell the function to create these three new columns in the "simdat" data.frame before assigning it to the new "simdat.new" object. 
 
-simdat$bmi <- simdat$wt_kg/(simdat$ht_cm/100) #Creating a bmi column. 
+#The new "state" column contains the same character, "Colorado", in every row of the column. The "bmi" column contains each individual's body mass index (BMI), which is a function of their weight and height. In creating that column, we used the patient's weight and height data stored in separate columns of the simdat dataframe, plugging them into the BMI equation. Finally, the "logbmi" column takes the values we just created in the "bmi" column and log-transforms them. 
 
-# Above, we created a new column, bmi, in the simdat dataframe that contains each individual's body mass index (BMI), which is a function of their weight and height. In specifying this new column, we used the patient's height and weight data stored in separate columns in the dataframe, plugging them into the BMI equation. 
-
-simdat$logbmi <- log10(simdat$bmi) #Creating a column of log-transformed bmi values. 
-
-# In the above line, we used the function 'log10()', which log(base-10)-transforms numerical data passed to the function. We
-# passed the data contained in the bmi column we just created to this function to log-transform it and store the results in the logbmi column. 
+#Note that if we attempted to create this new dataframe using a new line of mutate() for each column:
+simdat.new <- mutate(.data=simdat, state="Colorado")
+simdat.new <- mutate(.data=simdat, bmi=wt_kg/(ht_cm/100))
+simdat.new <- mutate(.data=simdat, logbmi=log10(wt_kg/(ht_cm/100)))
+#... this would over-write simdat.new every time and we would only end up with the logbmi. For this reason, we put all three new column arguments in the mutate() function at the top of this code chunk. 
+```
+```{r, echo=FALSE}
+simdat.new <- mutate(.data=simdat, state="Colorado", bmi=wt_kg/(ht_cm/100), logbmi=log10(bmi))
 ```
 
 ## Filter data
@@ -101,7 +104,7 @@ require(dplyr)
 ```
 
 ```{r}
-simdat.military <- filter(simdat, hospital == "Military Hospital")
+simdat.military <- filter(simdat.new, hospital == "Military Hospital")
 
 #In the above line, we specified the new dataframe, simdat.military, to be a subset of simdat, specifically those rows where the 'hospital' column contains a string exactly equal to "Military Hospital". 
 
@@ -111,8 +114,8 @@ dim(simdat.military) # As you can see, the size of our dataframe has reduced com
 What if we wanted to subset instead based on some numerical value? For example, what if we wanted to just use data from individuals 18 years-old or older? We can do that, too!
 
 ```{r}
-simdat.18 <- filter(simdat, age > 18) # However, this dataframe does not contain individuals exactly 18 years-old...
-simdat.18 <- filter(simdat, age >= 18) # ... this one does. 
+simdat.18 <- filter(simdat.new, age > 18) # However, this dataframe does not contain individuals exactly 18 years-old...
+simdat.18 <- filter(simdat.new, age >= 18) # ... this one does. 
 dim(simdat.18) # Looks like the subsetting was successful. 
 ```
 
@@ -126,7 +129,7 @@ dim(simdat.18) # Looks like the subsetting was successful.
 ```{r, message=F}
 # Look to the right for plain English translations. 
 
-outcome.summ <- simdat %>% # To make a new dataframe called outcome.summ, first take simdat AND THEN...
+outcome.summ <- simdat.new %>% # To make a new dataframe called outcome.summ, first take simdat AND THEN...
   group_by(hospital, outcome) %>% # ... group together all of its data based on hospital and outcome AND THEN...
   summarise(bmi.mean = mean(bmi), bmi.sd = sd(bmi)) # ... summarize each group's BMI data, storing the mean in a column called "bmi.mean" and the standard deviation in a column called "bmi.sd". 
 
@@ -321,7 +324,7 @@ simdat<- simdat%>%
 * Changing `date_onset` variable from a character to a date
 * Creating a new data frame with dates of onset in 2014
 
-```{r}
+```{r, echo=F}
 simdat.2014<-simdat[simdat$date_onset<=as.Date("2014-12-31"),]
 #Using base R
 simdat$date_onset <- as.Date(simdat$date_onset, format="%m/%d/%Y")

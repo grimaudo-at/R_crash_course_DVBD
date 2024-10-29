@@ -447,38 +447,38 @@ hist(simdat$age) # Returns a histogram of a column in your dataframe containing 
 <div class="line-block">      Often times, we will want to create new
 columns in our dataframe. This can be as simple as adding geographic
 metadata like country or state, or be a little more complex and use
-calculations made on data stored elsewhere in our dataframe. In the
-below chunk of code, we will add three new columns to our
-<code>simdat</code> dataframe: <code>state</code>, <code>bmi</code>, and
-<code>logbmi</code>. In each case, we will specify the new column using
-<code>\$</code>, which specifies a column in a dataframe in the
-following way: <code>dataframe$column</code>. We will then assign this
-column new values using the <code>&lt;-</code> assignment
-operator:<br />
+calculations made on data stored elsewhere in our dataframe. For
+example, in our dataset, we might first be interested in specifying that
+all this data came from Colorado in a new <code>state</code> column. We
+then might be interested in calculating the body mass index (BMI) of
+patients. To do so, we will create a new column, <code>bmi</code>, which
+will take values from the <code>ht_cm</code> and <code>wt_kg</code>
+columns for that patient and plug them into the BMI equation. We will
+then create another new column, <code>log.bmi</code>, that contains the
+log-transformed BMI values we just created.<br />
 <br />
-      For example, in our dataset, we might first be interested in
-specifying that all this data came from Colorado in a new
-<code>state</code> column. We then might be interested in calculating
-the body mass index (BMI) of patients. To do so, we will create a new
-column, <code>bmi</code>, which will take values from the
-<code>ht_cm</code> and <code>wt_kg</code> columns for that patient and
-plug them into the BMI equation. We will then create another new column,
-<code>log.bmi</code>, that contains the log-transformed bmi values we
-just created:<br />
+<br />
+      In the below chunk of code, we add the three new columns to our
+<code>simdat</code> dataframe: <code>state</code>, <code>bmi</code>, and
+<code>logbmi</code>. <strong>Note that there are various ways to
+accomplish this, including using the base R
+<code>dataframe$column</code> syntax.</strong> However, because we are
+working with <em>tidyverse</em> today, we will create these new columns
+using the <code>mutate()</code> function from package <em>dplyr</em>,
+which is part of the <em>tidyverse</em>:<br />
 <br />
 </div>
-<pre class="r"><code>simdat$state &lt;- &quot;Colorado&quot; # Creating a state column. 
+<pre class="r"><code>simdat.new &lt;- mutate(.data=simdat, state=&quot;Colorado&quot;, bmi=wt_kg/(ht_cm/100), logbmi=log10(bmi)) # Creating a state column. 
 
-# The above line of code creates the new column, &#39;state,&#39; in our dataframe, &#39;simdat,&#39; and fills every cell with the character &quot;Colorado&quot;. Even though this column did not yet exist, we created it by assigning it values using the &lt;- assignment syntax. 
+#In the above line of code, we created a new data.frame object called &quot;simdat.new&quot;. We used the assignment operator &quot;&lt;-&quot; to specify what we want this new dataframe to be. Then, using the mutate() function, we told R to make this new dataframe a version of our original dataframe, &quot;simdat&quot;, using the .data= argument. The state=, bmi=, and logbmi= arguments tell the function to create these three new columns in the &quot;simdat&quot; data.frame before assigning it to the new &quot;simdat.new&quot; object. 
 
-simdat$bmi &lt;- simdat$wt_kg/(simdat$ht_cm/100) #Creating a bmi column. 
+#The new &quot;state&quot; column contains the same character, &quot;Colorado&quot;, in every row of the column. The &quot;bmi&quot; column contains each individual&#39;s body mass index (BMI), which is a function of their weight and height. In creating that column, we used the patient&#39;s weight and height data stored in separate columns of the simdat dataframe, plugging them into the BMI equation. Finally, the &quot;logbmi&quot; column takes the values we just created in the &quot;bmi&quot; column and log-transforms them. 
 
-# Above, we created a new column, bmi, in the simdat dataframe that contains each individual&#39;s body mass index (BMI), which is a function of their weight and height. In specifying this new column, we used the patient&#39;s height and weight data stored in separate columns in the dataframe, plugging them into the BMI equation. 
-
-simdat$logbmi &lt;- log10(simdat$bmi) #Creating a column of log-transformed bmi values. 
-
-# In the above line, we used the function &#39;log10()&#39;, which log(base-10)-transforms numerical data passed to the function. We
-# passed the data contained in the bmi column we just created to this function to log-transform it and store the results in the logbmi column. </code></pre>
+#Note that if we attempted to create this new dataframe using a new line of mutate() for each column:
+simdat.new &lt;- mutate(.data=simdat, state=&quot;Colorado&quot;)
+simdat.new &lt;- mutate(.data=simdat, bmi=wt_kg/(ht_cm/100))
+simdat.new &lt;- mutate(.data=simdat, logbmi=log10(wt_kg/(ht_cm/100)))
+#... this would over-write simdat.new every time and we would only end up with the logbmi. For this reason, we put all three new column arguments in the mutate() function at the top of this code chunk. </code></pre>
 </div>
 <div id="filter-data" class="section level2">
 <h2>Filter data</h2>
@@ -494,7 +494,7 @@ packages today, of which <em>dplyr</em> is a part, we will use the
 Military Hospital:<br />
 <br />
 </div>
-<pre class="r"><code>simdat.military &lt;- filter(simdat, hospital == &quot;Military Hospital&quot;)
+<pre class="r"><code>simdat.military &lt;- filter(simdat.new, hospital == &quot;Military Hospital&quot;)
 
 #In the above line, we specified the new dataframe, simdat.military, to be a subset of simdat, specifically those rows where the &#39;hospital&#39; column contains a string exactly equal to &quot;Military Hospital&quot;. 
 
@@ -503,8 +503,8 @@ dim(simdat.military) # As you can see, the size of our dataframe has reduced com
 <p>What if we wanted to subset instead based on some numerical value?
 For example, what if we wanted to just use data from individuals 18
 years-old or older? We can do that, too!</p>
-<pre class="r"><code>simdat.18 &lt;- filter(simdat, age &gt; 18) # However, this dataframe does not contain individuals exactly 18 years-old...
-simdat.18 &lt;- filter(simdat, age &gt;= 18) # ... this one does. 
+<pre class="r"><code>simdat.18 &lt;- filter(simdat.new, age &gt; 18) # However, this dataframe does not contain individuals exactly 18 years-old...
+simdat.18 &lt;- filter(simdat.new, age &gt;= 18) # ... this one does. 
 dim(simdat.18) # Looks like the subsetting was successful. </code></pre>
 <pre><code>## [1] 1482   12</code></pre>
 </div>
@@ -525,7 +525,7 @@ dataframe, <code>outcome.summ</code>:<br />
 </div>
 <pre class="r"><code># Look to the right for plain English translations. 
 
-outcome.summ &lt;- simdat %&gt;% # To make a new dataframe called outcome.summ, first take simdat AND THEN...
+outcome.summ &lt;- simdat.new %&gt;% # To make a new dataframe called outcome.summ, first take simdat AND THEN...
   group_by(hospital, outcome) %&gt;% # ... group together all of its data based on hospital and outcome AND THEN...
   summarise(bmi.mean = mean(bmi), bmi.sd = sd(bmi)) # ... summarize each group&#39;s BMI data, storing the mean in a column called &quot;bmi.mean&quot; and the standard deviation in a column called &quot;bmi.sd&quot;. 
 
@@ -752,9 +752,6 @@ Try doing the following in base R.</p>
 date</li>
 <li>Creating a new data frame with dates of onset in 2014</li>
 </ul>
-<pre class="r"><code>simdat.2014&lt;-simdat[simdat$date_onset&lt;=as.Date(&quot;2014-12-31&quot;),]
-#Using base R
-simdat$date_onset &lt;- as.Date(simdat$date_onset, format=&quot;%m/%d/%Y&quot;)</code></pre>
 <pre class="r"><code>print(&quot;Congratulations, you&#39;ve completed the workshop!&quot;)</code></pre>
 <pre><code>## [1] &quot;Congratulations, you&#39;ve completed the workshop!&quot;</code></pre>
 </div>
