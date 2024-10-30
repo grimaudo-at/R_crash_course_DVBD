@@ -117,6 +117,9 @@ What if we wanted to subset instead based on some numerical value? For example, 
 simdat.18 <- filter(simdat.new, age > 18) # However, this dataframe does not contain individuals exactly 18 years-old...
 simdat.18 <- filter(simdat.new, age >= 18) # ... this one does. 
 dim(simdat.18) # Looks like the subsetting was successful. 
+
+simdat.military.18 <- filter(simdat.new, age >= 18 & hospital == "Military Hospital")
+#This line is an example of how we can filter by two or more variables at the same time, in this case age as well as hospital. 
 ```
 
 ## Summarize data
