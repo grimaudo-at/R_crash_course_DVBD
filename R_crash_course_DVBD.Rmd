@@ -1,7 +1,7 @@
 ---
 title: "Introduction to Programming in R"
 subtitle: "Division of Vector-Borne Diseases"
-author: "Dr. Alex Grimaudo and Dr. Carol Liu"
+author: "Dr. Alex Grimaudo, Dr. Carol Liu and Emma Jones"
 date: "2024-10-18"
 output: html_document
 ---
@@ -94,6 +94,7 @@ simdat.new <- simdat %>%
   mutate(logbmi=log10(wt_kg/(ht_cm/100)))
 #... this would over-write simdat.new every time and we would only end up with the logbmi. For this reason, we put all three new column arguments in the mutate() function at the top of this code chunk. 
 ```
+
 ```{r, echo=FALSE}
 simdat.new <- mutate(.data=simdat, state="Colorado", bmi=wt_kg/(ht_cm/100), logbmi=log10(bmi))
 ```
@@ -162,10 +163,10 @@ head(outcome.summ) # Give me the first 6 rows of the new dataframe.
 
 * **Mini exercise** Can you create a new summary data.frame, `num.patients`, that summarizes the number of patients of each age class admitted to each individual hospital? *Hint: the function* `n()` *counts the number of occurrences, providing a group size summary.*
 
-```{r, message=F}
+```{r, message=F, echo=F}
 num.patients <- simdat.new %>% 
-  group_by(hospital, age.class) %>% 
-  summarise(num = n())
+  group_by() %>%                ##Fill in the columns we want to group by, separating them using a ","
+  summarise()                   ##Fill in how we want to summarise the grouped data
 ```
 
 ## Write a .csv file
@@ -186,7 +187,7 @@ Dates in R can sometimes be tricky, especially if they are in different formats.
 
 * **Mini exercise** How can we check the class of `date_onset`?
 
-```{r}
+```{r, echo=F, eval=FALSE}
 class(simdat$date_onset)
 ```
 
@@ -210,9 +211,9 @@ Ensuring dates are actually read as dates into R is important for a number of re
 
 Lets's try filtering on dates. We would like to create a new dataframe with only cases that had an onset date in 2014, we can subset using either base R or tidyverse. Note that any time we want R to recognize a date, we need to use `as.Date`. For example, we can't simply code`filter(date_onset<="2014-12-31")` because R would not recognize this as a date. 
 
-* **Mini exercise** Try to complete the following code
+* **Mini exercise** Write code to create a new dataframe with only cases that had an onset date in 2014. Create a new dataframe `simdat.2014`
 
-```{r}
+```{r, echo=F}
 simdat.2014<- simdat%>%
                   filter(date_onset<=as.Date("2014-12-31"))
 ```
@@ -243,9 +244,9 @@ ggplot(data=simdat,                                              #data
   
 ```
 
-* **Mini exercise** Your turn! Now try to do a scatter plot with age on the x-axis and height on the y-axis. Ensure that you label your axis and plot title so it's informative! Here's some code to get you started
+* **Mini exercise** Your turn! Now try to do a scatter plot with age on the x-axis and height on the y-axis. Ensure that you label your axis and plot title so it's informative! Your plot should look somewhat like the figure below. 
 
-```{r, warning=F}
+```{r, warning=F, echo=F}
 ggplot(data=simdat,                                              #data
         aes(x=age, y=ht_cm))+                                    #aes mapping of x and y axis
         geom_point()+                                            #specifying scatter plot
@@ -256,11 +257,11 @@ ggplot(data=simdat,                                              #data
 
 Now we will try a different type of graph. We want to produce an epidemic curve of all cases over time. In order to do this, we first need to summarise the data so that we have the number of cases per day, by the date of onset. 
 
-* **Mini exercise** How can we summarise the data so that we have the number of cases per day, grouped by the date of onset?
+* **Mini exercise** Summarise the data so that we have the number of cases per day, grouped by the date of onset. Create a new dataframe `simdat.day.summ` for the new summarized data. 
 
 *Hint*: the function `n()` can count the number of rows in a dataframe. (It can also count the number of elements in any object.)
 
-```{r}
+```{r, echo=F}
 simdat.day.summ<-simdat%>%
                   group_by(date_onset)%>%
                   summarise(n_case=n())
@@ -277,17 +278,17 @@ ggplot(data=simdat.day.summ,                                              #data
 
 ```
 
+
 * **Mini exercise** Get creative! Try to figure out how we can modify the plot above:
 
+  * Add plot title, x-axis label and y-axis label
+  * Change the colors of the bars
+  * Increase the y-axis so it has a maximum of 80
+  * Change the background to a black white theme
 
-* Add plot title, x-axis label and y-axis label
-* Change the colors of the bars
-* Increase the y-axis so it has a maximum of 80
-* Change the background to a black white theme
+*Hint*: Try googling or looking at the package vignette for the `ggplot2` package. Your plot should look somewhat like the figure below.
 
-*Hint*: Try googling or looking at the package vignette for the `ggplot2` package
-
-```{r, warning=F}
+```{r, warning=F, echo=F}
 ggplot(data=simdat.day.summ,                                             #data
         aes(x=date_onset, y=n_case))+                                    #aes mapping of x and y axis
         geom_col(color="darkblue")+                                      #specifying bar plot  
@@ -319,10 +320,10 @@ ggplot(data=simdat.day.summ,                                             #data
 * Which variables can we use from the `simdat` to calculate this? 
 *Hint 1* How can you view the dataset? How can you view just the first several rows of the dataset? How can you view the column names?
 *Hint 2* Are all the relevant variables date variables?
-```{r}
+```{r, echo=F}
 ## To view the dataset
-view(simdat)
-class(simdat$date_outcome)
+#view(simdat)
+#class(simdat$date_outcome)
 
 simdat<- simdat%>%
             mutate(date_outcome=as.Date(date_outcome, format="%m/%d/%Y"), ##first convert date outcome to a date
@@ -343,14 +344,9 @@ simdat.2014<-simdat[simdat$date_onset<=as.Date("2014-12-31"),]
 simdat$date_onset <- as.Date(simdat$date_onset, format="%m/%d/%Y")
 ```
 
-```{r}
-print("Congratulations, you've completed the workshop!")
-```
-
-
 **Exercise 3** Using only cases of "Recover" individuals in `simdat`, summarise the mean and median of `days_outcome_onset` (created in Exercise 1) of these values by hospital and gender. *Hint: the* `na.rm=` *argument of* `mean()` *and* `median()` *tells R to ignore NA values when calculating averages, which will affect your summary.*
 
-```{r, message=FALSE}
+```{r, message=FALSE, echo=F}
 simdat.summ.ex <- simdat %>% 
   filter(outcome == "Recover") %>% 
   group_by(hospital, gender) %>% 
@@ -377,5 +373,10 @@ ggplot(data=simdat.day.gend.summ,                                              #
           ylim(0,50)+                                                          #setting y-axis limits
           theme_bw()                                                           #specifying a theme
 
+```
+
+
+```{r}
+print("Congratulations, you've completed the workshop!")
 ```
 
