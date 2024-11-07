@@ -11,15 +11,7 @@ Please navigate to this URL to download the materials we will be working with to
 
 https://github.com/grimaudo-at/R_crash_course_DVBD
 
-Download all of the contents of this GitHub repository in a .zip file and save in a location you can readily access on your device. After decompressing the .zip file, open the R project (*R_crash_course_DVBD.Rproj*), which will initialize a new session in R Studio. **R Projects** are useful files that set the working directory of your R session as the home folder of the Project. Therefore, below, we can simply read in our .csv file containing our data: 
-
-```{r}
-simdat <- read.csv("data_sim.csv") #We can do this...
-
-#simdat <- read.csv("C:/Users/zlh3/OneDrive - CDC/Grimaudo Personal/PE Fellowship Materials/trainings #materials/R_crash_course_DVBD/data_sim.csv") #... instead of this.
-```
-
-Once you've read this file in, it should be stored as a `data.frame` object called `simdat`. This `data.frame` is simulated data for a hypothetical infectious disease outbreak. The data it contains will look similar to epidemic data collected in the real world. 
+Download all of the contents of this GitHub repository in a .zip file and save in a location you can readily access on your device. After decompressing the .zip file, open the R project (*R_crash_course_DVBD.Rproj*), which will initialize a new session in R Studio. **R Projects** are useful files that set the working directory of your R session as the home folder of the Project. 
 
 # Let's get started
 |       First thing you should always do at the beginning of your R session: clear your workspace! This ensures that your R environment is clean and has no objects or functions defined during previous coding sessions. Think of this as cleaning your whiteboard before you start coding. 
@@ -28,12 +20,18 @@ Once you've read this file in, it should be stored as a `data.frame` object call
 ```{}
 rm(list = ls()) # Clearing workspace
 ```
+|       We can now read in our .csv file containing our data: 
+|    
+```{r}
+simdat <- read.csv("data_sim.csv") #We can do this...
 
-
+#simdat <- read.csv("C:/Users/zlh3/OneDrive - CDC/Grimaudo Personal/PE Fellowship Materials/trainings #materials/R_crash_course_DVBD/data_sim.csv") #... instead of this.
+```
+|    
+|       Once you've read this file in, it should be stored as a `data.frame` object called `simdat`. This `data.frame` is simulated data for a hypothetical infectious disease outbreak. The data it contains will look similar to epidemic data collected in the real world. 
+|    
 ## Load and install packages
-
 |       R Packages are the "toolkits" of the R computing world. They offer users unique tools ("functions") suited to whatever it is you want to do, from cleaning data, to building beautiful figures, to creating apps, to analyzing data and building models. Because R is open-source, *anybody* can build an R Package and make it available to the world. R comes with many packages pre-installed, but you will encounter many you will need to install yourself. We usually only need to install packages once, although some packages may need to be updated. Below, we install the *tidyverse* package using the `install.packages()` function and then load the package using `library()`:
-|
 |
 *Note that* `#`*, the annotation operator, can be used to prevent code from being run.*
 
@@ -51,12 +49,13 @@ library(tidyverse)             #Loading the package.
 ?unique()
 ```
 
-Using `?` in this way pulls the R documentation for the function that was published with the most recent (installed) version of its Package. 
-
+|    Using `?` in this way pulls the R documentation for the function that was published with the most recent (installed) version of its Package. 
+|    
 ## Examine your data
 
-One of the most important things to do before analyzing your data is to be familiar with its contents. Luckily, R has an assortment of functions to quickly explore your data!
-
+|    One of the most important things to do before analyzing your data is to be familiar with its contents. Luckily, R has an assortment of functions to quickly explore your data!
+|
+|    
 ```{r, results='hide',fig.keep='all'}
 View(simdat) # Opens a new tab in Rstudio to examine your dataframe
 unique(simdat$hospital) # Tells you all the unique values in the specified column ($hospital)
@@ -76,30 +75,32 @@ hist(simdat$age) # Returns a histogram of a column in your dataframe containing 
 |
 |       In the below chunk of code, we add the three new columns to our `simdat` dataframe: `state`, `bmi`, and `logbmi`. **Note that there are various ways to accomplish this, including using the base R `dataframe$column` syntax.** However, because we are working with *tidyverse* today, we will create these new columns using the `%>%` piping operator and `mutate()` function from packages *magrittr* and *dplyr*, respectively. In plain English, the `%>%` piping operator means "and then" and is used to string together a series of commands to wrangle, re-shape, and summarize your data:
 |
-|       
-```{r}
-simdat.new <- simdat %>% #The %>% piping operator means "AND THEN..."
-  mutate(state="Colorado", bmi=wt_kg/(ht_cm/100), logbmi=log10(bmi)) 
+|
 
-#In the above line of code, we created a new data.frame object called "simdat.new". We used the assignment operator "<-" to specify what we want this new data.frame to be. This new dataframe object would be built by taking simdat data.frame AND THEN adding three new columns to it: state, bmi, and logbmi. The code following the state=, bmi=, and logmi= arguments specify what should populate these new columns. 
-
-#The new "state" column contains the same character, "Colorado", in every row of the column. The "bmi" column contains each individual's body mass index (BMI), which is a function of their weight and height. In creating that column, we used the patient's weight and height data stored in separate columns of the simdat dataframe, plugging them into the BMI equation. Finally, the "logbmi" column takes the values we just created in the "bmi" column and log-transforms them. 
-
-#Note that if we attempted to create this new data.frame using a new line of mutate() for each column:
-simdat.new <- simdat %>% 
+```{r eval=F}
+# First, we create a new column for state that contains the same character, "Colorado", in every row of the column. 
+simdat %>%                  #The %>% piping operator means "AND THEN..."
   mutate(state="Colorado")
-simdat.new <- simdat %>% 
-  mutate(bmi=wt_kg/(ht_cm/100))
-simdat.new <- simdat %>% 
-  mutate(logbmi=log10(wt_kg/(ht_cm/100)))
-#... this would over-write simdat.new every time and we would only end up with the logbmi. For this reason, we put all three new column arguments in the mutate() function at the top of this code chunk. 
+
+###Next, we create a new object that contains the new dataframe with the new column for state
+simdat.new <- simdat %>% #The %>% piping operator means "AND THEN..."
+  mutate(state="Colorado")
+
+##We can create multiple new columns in a single mutate() argument.The "bmi" column contains each individual's body mass index (BMI), which is a function of their weight and height. In creating that column, we used the patient's weight and height data stored in separate columns of the simdat dataframe, plugging them into the BMI equation. Finally, the "logbmi" column takes the values we just created in the "bmi" column and log-transforms them. 
+
+simdat %>% 
+  mutate(state="Colorado", bmi=wt_kg/(ht_cm/100), logbmi=log10(bmi)) 
 ```
 
-```{r, echo=FALSE}
-simdat.new <- mutate(.data=simdat, state="Colorado", bmi=wt_kg/(ht_cm/100), logbmi=log10(bmi))
+```{r}
+## We can then assign the new dataframe with all three new columns into simdat.new
+## Note that this overwrites the earlier simdat.new
+simdat.new <- simdat %>% 
+  mutate(state="Colorado", bmi=wt_kg/(ht_cm/100), logbmi=log10(bmi)) 
 ```
 
-What if we wanted to add a new column containing character data based off of numerical data in another column? For example, we might want to create an "age class" column, specifying people under 13 years of age as "children," between 13 and 18 as "teenagers," and over 18 as "adults." To do this, we can use the `case_when()` function in combination with `mutate()` to specify what values a new column, "age.class," should take: 
+|         What if we wanted to add a new column containing character data based off of numerical data in another column? For example, we might want to create an "age class" column, specifying people under 13 years of age as "children," between 13 and 18 as "teenagers," and over 18 as "adults." To do this, we can use the `case_when()` function in combination with `mutate()` to specify what values a new column, "age.class," should take: 
+|
 
 ```{r}
 simdat.new <- simdat.new %>% 
@@ -119,6 +120,7 @@ simdat.new <- simdat.new %>%
 |       When working with our data, we often are interested in only a subset, such as that from a specific hospital. In R, there are a few different ways to subset our data in this way, including using base-R indexing syntax, the base-R `subset()` function, and the `filter()` function from the package *dplyr*. Because we are working with the *tidyverse* packages today, of which *dplyr* is a part, we will use the `filter()` function. Below, we create a new dataframe, `simdat.military`, which only contains data collected from Military Hospital:
 |
 |
+
 ```{r, echo=FALSE, results='hide', message=F, warning=F}
 require(dplyr)
 ```
@@ -132,7 +134,10 @@ simdat.military <- simdat.new %>%
 dim(simdat.military) # As you can see, the size of our dataframe has reduced compared to simdat, indicating the subsetting worked. 
 ```
 
-What if we wanted to subset instead based on some numerical value? For example, what if we wanted to just use data from individuals 18 years-old or older? We can do that, too!
+|
+|         What if we wanted to subset instead based on some numerical value? For example, what if we wanted to just use data from individuals 18 years-old or older? We can do that, too!
+|
+|
 
 ```{r}
 simdat.18 <- simdat.new %>% 
@@ -148,14 +153,26 @@ simdat.military.18 <- simdat.new %>%
 
 ## Summarize data
 
-|       One of the most common things you will want to do with your dataset is make summaries. The *tidyverse* makes this quite simple in R with the `summarise()` function from *dplyr*. Below, we will create a new `data.frame` object, `outcome.summ`, which will summarise the mean and standard deviation of BMI data for each hospital and disease outcome ("Recover", or "Death") combination. We might do this because we are interested in how a potential association between BMI and disease outcome varies by hospital: 
+|       One of the most common things you will want to do with your dataset is make summaries. The *tidyverse* makes this quite simple in R with the `group_by()` and `summarise()` functions from *dplyr*. First, let's gain some intuition around the two functions.
+|
+
+```{r}
+simdat.new%>%
+  group_by(outcome)%>%           #group_by specifies which column we want to stratify our data by         
+  summarise(bmi.mean=mean(bmi))  #summarise specified how we want to summarise the data
+```
+
+|
+|       Below, we will create a new `data.frame` object, `outcome.summ`, which will summarise the mean and standard deviation of BMI data for each hospital and disease outcome ("Recover", or "Death") combination. We might do this because we are interested in how a potential association between BMI and disease outcome varies by hospital: 
 |
 |
+
 ```{r, message=F}
 # Look to the right for plain English translations. 
 
+
 outcome.summ <- simdat.new %>% # To make a new data.frame called outcome.summ, first take simdat.new AND THEN...
-  group_by(hospital, outcome) %>% # ... group together all of its data based on outcome AND THEN...
+  group_by(hospital, outcome) %>% # ... group together all of its data based on hostapial and outcome AND THEN...
   summarise(bmi.mean = mean(bmi), bmi.sd = sd(bmi)) # ... summarize each group's BMI data, storing the mean in a column called "bmi.mean" and the standard deviation in a column called "bmi.sd". 
 
 head(outcome.summ) # Give me the first 6 rows of the new dataframe. 
@@ -170,8 +187,7 @@ num.patients <- simdat.new %>%
 ```
 
 ## Write a .csv file
-
-Today, we have created several new dataframes from our original simdat dataframe. If we want to save these new dataframes as a .csv file, the function `write.csv()` will come in handy. In the example below, we will write our new BMI summary dataframe as a new .csv file:
+|    Today, we have created several new dataframes from our original simdat dataframe. If we want to save these new dataframes as a .csv file, the function `write.csv()` will come in handy. In the example below, we will write our new BMI summary dataframe as a new .csv file:
 
 ```{r}
 write.csv(x=outcome.summ, file="bmi_summ_dat.csv", row.names = F)
@@ -183,17 +199,21 @@ write.csv(x=outcome.summ, file="bmi_summ_dat.csv", row.names = F)
 *Hint:* You can check your working directory with the command `getwd()`
 
 ## Working with dates in R
-Dates in R can sometimes be tricky, especially if they are in different formats.  In the dataset `simdat`, there is a column that is named `date_onset`. First, lets check what class `date_onset` is stored as.
+|   Dates in R can sometimes be tricky, especially if they are in different formats.  In the dataset `simdat`, there is a column that is named `date_onset`. First, lets check what class `date_onset` is stored as.
+|
 
 * **Mini exercise** How can we check the class of `date_onset`?
 
 ```{r, echo=F, eval=FALSE}
 class(simdat$date_onset)
 ```
+|
+|     We need to reformat `date_onset` from a character to a date class. We will use the `as.Date()` function to handle this. Currently, the format of the date variable is month/day/year so we need to tell R what the current format is. To do this, we use the `%` specifically for dates to tell R which part of the character represents day, month and year respectively. Below is some code to do this using tidyverse. 
+|
 
-We need to reformat `date_onset` from a character to a date class. We will use the `as.Date()` function to handle this. Currently, the format of the date variable is month/day/year so we need to tell R what the current format is. To do this, we use the `%` specifically for dates to tell R which part of the character represents day, month and year respectively. Below is some code to do this using tidyverse. 
-
-We start with the `simdat` dataset, pass the dataset into the `mutate()` function using the pipe operator `%>%`. Within the `mutate()` function we convert `date_onset` from a character into a date using the `as.Date` function. Lastly, we assign the newly converted `simdat` dataframe back into `simdat`. 
+|      We start with the `simdat` dataset, pass the dataset into the `mutate()` function using the pipe operator `%>%`. Within the `mutate()` function we convert `date_onset` from a character into a date using the `as.Date` function. Lastly, we assign the newly converted `simdat` dataframe back into `simdat`. 
+|
+|
 
 ```{r}
 #Using tidyverse
@@ -201,16 +221,18 @@ simdat<- simdat %>%
           mutate(date_onset=as.Date(date_onset,format="%m/%d/%Y"))
 ```
 
-We can now recheck the format of `date_onset` and visually inspect the converted `date_onset` column
+|     We can now recheck the format of `date_onset` and visually inspect the converted `date_onset` column
+|
+
 ```{r}
 class(simdat$date_onset)
 head(simdat$date_onset)
 ```
-
-Ensuring dates are actually read as dates into R is important for a number of reasons. First, we can now filter and subset based on dates. Second, we can now do calculations with the date variables. Third, we can now generate time series plots or epidemic curves over time using the date variable as an x-axis, which we will cover in the next section. 
-
-Lets's try filtering on dates. We would like to create a new dataframe with only cases that had an onset date in 2014, we can subset using either base R or tidyverse. Note that any time we want R to recognize a date, we need to use `as.Date`. For example, we can't simply code`filter(date_onset<="2014-12-31")` because R would not recognize this as a date. 
-
+|
+|     Ensuring dates are actually read as dates into R is important for a number of reasons. First, we can now filter and subset based on dates. Second, we can now do calculations with the date variables. Third, we can now generate time series plots or epidemic curves over time using the date variable as an x-axis, which we will cover in the next section. 
+|
+|     Let's try filtering on dates. We would like to create a new dataframe with only cases that had an onset date in 2014, we can subset using either base R or tidyverse. Note that any time we want R to recognize a date, we need to use `as.Date`. For example, we can't simply code`filter(date_onset<="2014-12-31")` because R would not recognize this as a date. 
+|
 * **Mini exercise** Write code to create a new dataframe with only cases that had an onset date in 2014. Create a new dataframe `simdat.2014`
 
 ```{r, echo=F}
@@ -219,21 +241,26 @@ simdat.2014<- simdat%>%
 ```
 
 ## Plotting in R using ggplot()
-`ggplot2` is a powerful and widely-used data visualization package in R that’s part of the tidyverse family. It is based on the idea of "Grammar of Graphics," which provides a structured and logical approach to creating plots. The key idea behind ggplot2 is that data visualization can be broken down into layers, where each layer represents a specific component or transformation of the data. This allows us to describe a plot in terms of building blocks or layers. Each plot has several essential components 
-
+|      `ggplot2` is a powerful and widely-used data visualization package in R that’s part of the tidyverse family. It is based on the idea of "Grammar of Graphics," which provides a structured and logical approach to creating plots. The key idea behind ggplot2 is that data visualization can be broken down into layers, where each layer represents a specific component or transformation of the data. This allows us to describe a plot in terms of building blocks or layers. Each plot has several essential components 
+|
 * *Data*: The dataset you are visualizing.
 * *Aesthetic mappings (aes)*: Describes how data variables map to visual properties like position, color, size, etc.
 * *Geometries (geoms)*: Defines the type of plot, such as points (scatter plot), lines (line plot), bars (bar plot), etc.
 * *Many other bells and whistles*: Controlling scales and legends, adding text, changing colors, facetting etc. 
 
-We will start by creating a scatter plot of age and weight, with age on the x-axis and weight on the y-axis. We will use the `ggplot()` function. First, we will specify the dataset we are using. Then we will provide the `aes()` mapping by specifying which variable we want on the x-axis and which variable on the y-axis, lastly, we specify the type of plot for R. In our case, a scatterplot is specific as `geom_point()`.
+|       We will start by creating a scatter plot of age and weight, with age on the x-axis and weight on the y-axis. We will use the `ggplot()` function. First, we will specify the dataset we are using. Then we will provide the `aes()` mapping by specifying which variable we want on the x-axis and which variable on the y-axis, lastly, we specify the type of plot for R. In our case, a scatterplot is specific as `geom_point()`.
+|
+|
+
 ```{r, warning=FALSE}
 ggplot(data=simdat,              #data
         aes(x=age, y=wt_kg))+    #aes mapping of x and y axis
         geom_point()             #specifying scatter plot
 ```
 
-We can now build on this plot by adding a title and providing more informative labels to the x and y axis using the functions `ggtitle()`, `xlab()` and `ylab()`. Note that in the `ggplot()` syntax, we simply `+` each separate element onto the code as we build out our plot.
+|        We can now build on this plot by adding a title and providing more informative labels to the x and y axis using the functions `ggtitle()`, `xlab()` and `ylab()`. Note that in the `ggplot()` syntax, we simply `+` each separate element onto the code as we build out our plot.
+|
+
 ```{r, warning=F}
 ggplot(data=simdat,                                              #data
         aes(x=age, y=wt_kg))+                                    #aes mapping of x and y axis
@@ -255,8 +282,9 @@ ggplot(data=simdat,                                              #data
         ylab("Height (cm)")                                      #Y-axis label
 ```
 
-Now we will try a different type of graph. We want to produce an epidemic curve of all cases over time. In order to do this, we first need to summarise the data so that we have the number of cases per day, by the date of onset. 
 
+|       Now we will try a different type of graph. We want to produce an epidemic curve of all cases over time. In order to do this, we first need to summarise the data so that we have the number of cases per day, by the date of onset. 
+|
 * **Mini exercise** Summarise the data so that we have the number of cases per day, grouped by the date of onset. Create a new dataframe `simdat.day.summ` for the new summarized data. 
 
 *Hint*: the function `n()` can count the number of rows in a dataframe. (It can also count the number of elements in any object.)
@@ -267,8 +295,9 @@ simdat.day.summ<-simdat%>%
                   summarise(n_case=n())
                   
 ```
-
-Now that we have our data properly summarized by the date of symptom onset, we can now proceed with producing an epidemic curve. Below is some code for a bar plot using `ggplot()`. 
+|
+|       Now that we have our data properly summarized by the date of symptom onset, we can now proceed with producing an epidemic curve. Below is some code for a bar plot using `ggplot()`. 
+|
 
 ```{r, warning=F}
 
