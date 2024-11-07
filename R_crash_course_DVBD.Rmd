@@ -2,7 +2,7 @@
 title: "Introduction to Programming in R"
 subtitle: "Division of Vector-Borne Diseases"
 author: "Dr. Alex Grimaudo, Dr. Carol Liu and Emma Jones"
-date: "2024-10-18"
+date: "2024-11-12"
 output: html_document
 ---
 
@@ -169,7 +169,6 @@ simdat.new%>%
 
 ```{r, message=F}
 # Look to the right for plain English translations. 
-
 
 outcome.summ <- simdat.new %>% # To make a new data.frame called outcome.summ, first take simdat.new AND THEN...
   group_by(hospital, outcome) %>% # ... group together all of its data based on hostapial and outcome AND THEN...
